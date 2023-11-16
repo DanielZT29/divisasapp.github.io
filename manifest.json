@@ -1,0 +1,15 @@
+{
+    "name" : "ProyectoPWA",
+    "shortname" : "PWAP",
+    "start_url" : "/PWA_P/index.html",
+    "display" : "standalone",
+    "scope" : ".",
+    "description" : "PROYECTOPWA",
+    "icons":[
+        {
+            "src":"stonks.png",
+            "sizes":"512x512",
+            "type":"image/png"
+        }
+    ]
+}

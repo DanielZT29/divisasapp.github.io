@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="intro">
+        <h1 class="logo-header">
+            <span class="logo">Div</span><span class="logo">isa</span>
+        </h1>
+    </div>
+    
+    <nav class="navbar navbar-expand-lg navbar-primary bg-primary">
+       <img src="Ethereum_logo_translucent.svg.png" height="60" width="60"> 
+       <h4> CDD </h4>
+    </nav>
+
+    <div class="stonks">
+        <img src="stonks.png" height="704" width="400">
+       
+    </div>
+
+
+ <div class="container">
+  <div class="row">
+    <div class="col-md-10 ms-md-auto">
+      <div class="card card-custom-height text-center">
+        <div class="row g-0">
+          <div class="col-md-12">
+            <div class="card-body">
+              <h3 class="card-title">Conversor de divisa</h3>
+              <div class="container">
+                <div class="row justify-content-center">
+                  <div class="col-md-4">
+                    <label for="Cantidad">Cantidad</label>
+                    <input type="number" class="form-control" id="number">
+                  </div>
+                  <div class="col-md-4">
+                    <label for="Divisa1">Divisa 1</label>
+                    <select name="currency1" class="form-control moneda" onchange="updatevalue()"></select>
+                  </div>
+                </div>
+                <div class="row justify-content-center">
+                  <div class="col-md-4">
+                    <label for="Divisa2">Conversion</label>
+                    <input type="text" class="form-control" id="output" disabled> 
+                </div>
+                <div class="col-md-4">
+                  <label for="Divisa2">Divisa 2</label>
+                  <select name="currency2" class="form-control moneda" onchange="updatevalue()"> </select>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+        const select = document.querySelectorAll('.moneda');
+        const number = document.getElementById("number");
+        const output = document.getElementById("output");
+
+        function showNotification(fromCurrency, toCurrency, conversionRate) {
+            const notifTitle = "Conversión de Divisas";
+            const notifBody = `Se ha realizado una conversión de ${number.value} ${fromCurrency} a ${toCurrency}. Tasa de cambio: ${conversionRate}`;
+            const notifImg = "stonks.png"; // Reemplaza con la URL de tu icono
+            const options = {
+                body: notifBody,
+                icon: notifImg,
+            };
+
+            new Notification(notifTitle, options);
+        
+          }
+
+        fetch('https://api.frankfurter.app/currencies')
+         .then((data) => data.json())
+         .then((data) =>{
+              display(data);
+         })
+
+         .catch((error) => {
+          console.error('Error al obtener la lista de divisas:', error);
+         });
+
+        // Al intentar obtener la última respuesta desde el almacenamiento local
+        const lastResponse = JSON.parse(localStorage.getItem('lastResponse')) || null;
+        if (lastResponse) {
+            // Mostrar el último resultado en el campo de salida
+            output.value = Object.values(lastResponse.rates)[0];
+        }
+
+        function display(data){
+            const entries = Object.entries(data);
+            for(var i = 0; i < entries.length; i++){
+                select[0].innerHTML += `<option value="${entries[i][0]}">${entries[i][0]} : ${entries[i][1]}`;
+                select[1].innerHTML += `<option value="${entries[i][0]}">${entries[i][0]} : ${entries[i][1]}`;
+            }
+        }
+
+        function updatevalue(){
+            let currency1 = select[0].value;
+            let currency2 = select[1].value;
+            let value = number.value;
+
+            if(currency1 != currency2){
+                convert(currency1, currency2, value);
+            } else {
+                alert("Elige una divisa diferente");
+            }
+        }
+
+        function convert(currency1, currency2, value){
+            const host = "api.frankfurter.app";
+
+            fetch(`https://${host}/latest?amount=${value}&from=${currency1}&to=${currency2}`)
+            .then((val) => val.json())
+            .then((val) => {
+              const conversionRate = Object.values(val.rates)[0];
+                    console.log(conversionRate);
+                    output.value = conversionRate;
+
+                // Almacenar la última respuesta exitosa en el almacenamiento local
+                localStorage.setItem('lastResponse', JSON.stringify(val));
+
+                // Mostrar notificación
+                showNotification(currency1, currency2, conversionRate);
+            })
+            .catch((error) => {
+                console.error('Error en la solicitud a la API:', error);
+
+                // Mostrar alerta cuando esté offline
+                if (!navigator.onLine) {
+                    alert('Estás en modo offline. Por favor, revisa tu conexión.');
+                }
+            });
+        }
+
+
+</script>
+
+<script>
+
+  window.addEventListener('load', () => {
+      registrarSW();
+  });
+
+  async function registrarSW() { 
+      if('serviceWorker' in navigator) {
+          
+          try{
+              await navigator 
+              .serviceWorker
+              .register('sw.js');
+          }
+
+          catch (e){    
+              console.log('El service worker no pudo ser registrado');
+          } 
+      } 
+  }
+
+</script>
+
+
+</body>
+<script src="app.js"></script> 
+
+
+</html>
